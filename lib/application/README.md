@@ -1,0 +1,1 @@
+## This layer coordinates the execution of tasks and defines use cases. It is responsible for interacting with the domain layer to fulfill application-specific tasks, but it should not contain business logic itself.

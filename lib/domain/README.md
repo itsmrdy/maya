@@ -1,0 +1,1 @@
+## This layer contains the domain model, including entities, value objects, aggregates, domain events, and services. It's the heart of the application and should reflect the business logic in the most accurate way.

@@ -1,0 +1,1 @@
+## This layer is responsible for interacting with users (if applicable). It contains the code that presents the results of business logic to the user and collects inputs to trigger the application layer.

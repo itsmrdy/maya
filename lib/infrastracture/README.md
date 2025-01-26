@@ -1,0 +1,1 @@
+## This layer provides the technical services the application needs, such as database access, external APIs, messaging systems, etc. It interacts with the domain layer and the application layer but shouldn't directly contain domain logic.
