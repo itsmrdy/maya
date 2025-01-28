@@ -16,6 +16,9 @@ class MayaUserEntities {
   /// This value can be used to track user funds or account balance.
   final double balance;
 
+
+  final int userid;
+
   /// Creates a new instance of [MayaUserEntities] with the given [username], [password],
   /// and [balance]. All fields are required to initialize the object.
   ///
@@ -26,5 +29,6 @@ class MayaUserEntities {
     required this.username,
     required this.password,
     required this.balance,
+    required this.userid,
   });
 }

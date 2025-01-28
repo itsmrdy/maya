@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../application/parameters/maya_auth_parameters.dart';
+import '../../entities/maya_user_entities.dart';
 import '../exceptions/app_failure.dart';
-import '../../entities/maya_auth_entities.dart';
 
 /// Abstract class defining the contract for authentication services in the application.
 /// It provides methods for logging in and logging out users.
@@ -20,7 +20,7 @@ abstract class AMayaAuthService {
   /// Returns:
   /// - [Right(MayaAuthEntities)] if the login is successful (containing user token and login time).
   /// - [Left(AppFailure)] if the login fails (e.g., invalid credentials, network error).
-  Future<Either<AppFailure, MayaAuthEntities>> login({
+  Future<Either<AppFailure, MayaUserEntities>> login({
     required MayaAuthParameters
         authParameters, // Parameters containing username and password
   });
@@ -31,4 +31,6 @@ abstract class AMayaAuthService {
   /// - [Right(true)] if the logout is successful.
   /// - [Left(AppFailure)] if the logout fails (e.g., no user is logged in, network error).
   Future<Either<AppFailure, bool>> logout();
+
+  Future<Either<AppFailure, String?>> fetchUserToken();
 }

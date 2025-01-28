@@ -1,6 +1,7 @@
 import 'dart:io';
+import '../../domain/model/extensions/dartz_extensions.dart';
 import '../../domain/model/interfaces/seeder.dart';
-import '../database/maya_database.dart';
+import '../database/maya_database_seeder.dart';
 
 /// A class responsible for seeding the database with initial data.
 /// 
@@ -11,7 +12,7 @@ import '../database/maya_database.dart';
 /// to ensure that the database contains predefined data before use.
 class DatabaseSeeder extends Seeder {
   /// The [MayaDatabase] instance used to interact with the actual database.
-  final MayaDatabase mayaDatabase;
+  final MayaDatabaseSeeder mayaDatabase;
 
   /// Creates a new instance of [DatabaseSeeder] with the specified [mayaDatabase].
   /// The [mayaDatabase] is responsible for managing database creation and population.
@@ -44,6 +45,8 @@ class DatabaseSeeder extends Seeder {
         // Populate the database with initial data
         mayaDatabase.populate();
         return;
+      }else{
+        stderr.writeln('There was an issue running the seeder: ${db.left().message}');
       }
       // If opening the database failed, no further action is taken
       return;

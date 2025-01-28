@@ -16,7 +16,7 @@ import '../failures/default_failure.dart';
 ///   and message, ensuring consistency in error handling.
 
 class DefaultExceptionsConverter<T> extends ExceptionConverter<T, Exception, DefaultFailure> {
-
+  const DefaultExceptionsConverter();
   /// Converts a caught exception into a `DefaultFailure` instance.
   ///
   /// - `logger`: The logger used to log the error message, exception details, and stack trace.

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:maya/infrastracture/database/maya_database.dart';
+import 'package:maya/infrastracture/database/maya_database_seeder.dart';
 import 'package:maya/infrastracture/seeder/database_seeder.dart';
 import 'package:maya/infrastracture/seeder/user_seeder.dart';
 
@@ -13,9 +13,7 @@ void main(List<String> arguments) {
 
   runner.run(arguments).catchError(
     (error) {
-      if (error is UsageException) {
-        print('Error: ${error.message}');
-      }
+      if (error is UsageException) {}
     },
   );
 }
@@ -37,7 +35,7 @@ class UserSeederCommand extends Command {
     stderr.writeln('Seeding the SQLite database...');
 
     DatabaseSeeder databaseSeeder = DatabaseSeeder(
-      mayaDatabase: MayaDatabase(
+      mayaDatabase: MayaDatabaseSeeder(
         seeder: [UserSeeder()],
       ),
     );

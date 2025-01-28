@@ -32,7 +32,7 @@ import 'app_failure.dart';
 /// }
 /// ```
 abstract class ExceptionConverter<T, E extends Exception, F extends AppFailure> {
-
+  const ExceptionConverter();
   /// Executes an asynchronous action and handles exceptions by mapping them to 
   /// an `AppFailure`. If an exception of type `E` is thrown, the `onException`
   /// method is invoked to create an appropriate failure response.

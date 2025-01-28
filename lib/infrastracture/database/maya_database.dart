@@ -1,158 +1,110 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import '../../application/parameters/maya_auth_parameters.dart';
-import '../../domain/model/abstracts/database/a_database.dart';
-import '../../domain/model/abstracts/exceptions/app_failure.dart';
-import '../../domain/services/failures/database_failure.dart';
-import '../seeder/user_seeder.dart';
-
-import '../../domain/model/interfaces/database.dart';
-// import 'package:path/path.dart' as path;
-
 import 'package:sqlite3/sqlite3.dart';
-import '../../domain/model/interfaces/seeder.dart';
+import '../../application/parameters/maya_auth_parameters.dart';
+import 'package:path_provider/path_provider.dart';
+import '../../domain/model/abstracts/exceptions/app_failure.dart';
+import '../../domain/model/valueobjects/maya_auth_user_dto.dart';
+import '../../domain/model/abstracts/database/a_database.dart';
+import '../../domain/services/failures/database_failure.dart';
 
-/// MayaDatabase is a subclass of [ADatabase] that implements [IDatabase] interface.
-/// This class is responsible for managing the SQLite database used in the application, including
-/// creating, opening, and populating it with initial data. It also handles database failures and
-/// provides methods to manipulate the database schema.
-class MayaDatabase extends ADatabase implements IDatabase {
-  /// A list of [Seeder] objects used for populating the database.
-  final List<Seeder> seeder;
+/// [MayaDatabase] is a subclass of [ADatabase] that handles the operations related to the SQLite
+/// database used within the application. This class is responsible for copying the database from
+/// assets to the device's local storage, loading user data from the database, and ensuring that
+/// the database is properly populated with necessary data.
 
+class MayaDatabase extends ADatabase {
   /// The SQLite [Database] instance that is used for database operations.
   Database? _database;
 
-  /// A list of seeders (initial data providers) used to populate the database.
-  List<Seeder>? seedersList;
-
-  /// The path where the database is stored.
-  String? _databasePath;
-
-  /// Constructor for [MayaDatabase] that initializes the [seeder] list and sets the
-  /// database path to the specified file in the current working directory.
+  /// Copies the database from the assets folder to the application's local directory.
   ///
-  /// [seeder] - List of seeders to populate the database.
-  MayaDatabase({
-    required this.seeder,
-  }) : seedersList = seeder {
-    // Set the database path to the 'maya_database.db' in the current directory.
-    stderr.writeln("Preparing the database path......");
-    _databasePath = '${Directory.current.path}/assets/maya_database.db';
-    // Open the SQLite database at the specified path
-    _database = sqlite3.open(_databasePath!);
-  }
-
-  /// Attempts to create and open a database at the specified [databasePath].
-  /// If the database already exists, it will be opened. If not, a new one will be created
-  /// with a table called "User" containing the columns: `id`, `username`, `password`, and `balance`.
+  /// This method checks if the database already exists in the application's documents directory.
+  /// If it exists, it deletes the existing database and copies it again from the assets folder to
+  /// ensure the latest version of the database is available.
+  /// If the database doesn't exist, it will simply copy it from the assets.
   ///
-  /// It also deletes or removes any existing database before attempting to open or create a new one.
-  ///
-  /// Returns:
-  /// - A [Right] containing the database path if successful.
-  /// - A [Left] containing a [DatabaseFailure] if the database could not be found or opened.
-  @override
-  Future<Either<AppFailure, String>> createTableForDatabase() async {
-    // Call to remove any existing database before creating a new one
-    deleteOrRemoveDatabase();
-    try {
-      // If the database was opened or created successfully, return its path
-      if (_database != null) {
-        // Drop the 'User' table if it exists and recreate it
-        _database!.execute(
-            '''DROP TABLE IF EXISTS User; CREATE TABLE User (id INTEGER PRIMARY KEY, username TEXT, password TEXT, balance REAL)''');
-        return right(_database!.toString());
-      } else {
-        // Return a failure if the database is null
-        return left(DatabaseFailure(
-            code: 404, message: 'Cannot find database using $_databasePath'));
-      }
-    } catch (e) {
-      // Return a failure if there's an error opening or creating the database
-      return left(DatabaseFailure(
-          code: 500, message: 'Error opening or creating database: $e'));
-    }
-  }
-
-  /// Deletes or disposes of the existing database instance if it exists.
-  ///
-  /// This method ensures that any resources held by the database are released,
-  /// preparing the system for the creation of a new database.
-  @override
-  void deleteOrRemoveDatabase() async {
-    if (_database != null) _database!.dispose();
-  }
-
-  /// The path to the database file, or an empty string if no path is set.
-  @override
-  String? get databasePath => _databasePath ?? '';
-
-  /// Populates the database with initial data by using the provided seeders.
-  ///
-  /// This method goes through each [Seeder] in the [seedersList] and performs the necessary
-  /// actions to insert data into the database. For example, the [UserSeeder] is responsible for
-  /// inserting predefined user data into the 'User' table.
-  @override
-  void populate() {
-    if (seedersList != null) {
-      // Loop through each seeder and populate the database
-      for (var seeder in seedersList!) {
-        if (seeder is UserSeeder) {
-          UserSeeder userSeeder = UserSeeder()..run();
-
-          // Insert the seeded data into the 'User' table
-          for (var i = 0; i < userSeeder.data.length; i++) {
-            final user = userSeeder.data[i];
-            _database!.execute(
-              'INSERT INTO User(username, password, balance) VALUES("${user.username}", "${user.password}", ${user.balance})',
-            );
-          }
-
-          // Print the inserted data
-          final result = _database!.select('SELECT * FROM User');
-          for (var row in result) {
-            stderr.writeln(
-                'User with username: ${row['username']} has been generated');
-          }
-          stderr.writeln('Database has been seeded successfully....');
-        }
-      }
-    }
-  }
-
-  /// Loads user data based on the provided authentication parameters.
-  ///
-  /// This is a placeholder method that can be implemented later for user authentication
-  /// or data loading logic. The [authParameters] can be used to load user-specific data
-  /// from the database if required.
-  @override
-  Future<bool> loadUser({required MayaAuthParameters authParameters}) async {
-    // Placeholder for user loading logic
-    final result = _database!
-        .select('''SELECT * FROM User WHERE username= ${authParameters.username}
-    AND password=${authParameters.password}''');
-    ///RETURN A MODEL HERE
-    return result.isNotEmpty;
-  }
-
+  /// The method handles asynchronous operations and will print debug information when running in
+  /// debug mode.
   @override
   Future<void> copyDataBaseFromAsset() async {
+    // Get the application document directory path where the database will be stored
     final directory = await getApplicationDocumentsDirectory();
     final dbPath = '${directory.path}/my_database.db';
 
+    // Log the copying process if in debug mode
+    if (kDebugMode) {
+      print('Copying database from assets to applications directory');
+      print('using path: $dbPath');
+    }
+
     // Check if the file already exists to avoid overwriting it
     if (File(dbPath).existsSync()) {
-      stderr.writeln('Database already exists at $dbPath');
+      if (kDebugMode) print('Database already exists at $dbPath');
+      // If the database exists, delete the existing one before copying a fresh copy
+      await File(dbPath).delete();
+      copyDataBaseFromAsset(); // Recurse to copy the new version of the database
       return;
     }
 
-    // Copy the database from the assets folder
+    // Copy the database from the assets folder to the application's documents directory
     ByteData data = await rootBundle.load('assets/maya_database.db');
     List<int> bytes = data.buffer.asUint8List();
     File(dbPath).writeAsBytesSync(bytes);
-    stderr.writeln('Database copied to $dbPath');
+
+    // Log the completion of the copy operation
+    if (kDebugMode) print('Database copied to $dbPath');
   }
+
+  /// Loads user data from the database based on the provided [authParameters].
+  ///
+  /// This method retrieves user data from the 'User' table in the SQLite database stored
+  /// in the application documents directory. It opens the database if not already opened,
+  /// and executes a query to fetch user data.
+  ///
+  /// If the user data is found, it returns a [MayaAuthUserDto] containing the data.
+  /// If no data is found, it returns a [DatabaseFailure] indicating that no data was found
+  /// matching the parameters.
+  ///
+  /// This method demonstrates how to interact with the database asynchronously using the
+  /// SQLite package.
+  @override
+  Future<Either<AppFailure, MayaAuthUserDto>> loadUser({
+    required MayaAuthParameters authParameters,
+  }) async {
+    // Get the application document directory path where the database is stored
+    final directory = await getApplicationDocumentsDirectory();
+    final dbPath = '${directory.path}/my_database.db';
+
+    // Open the database if it hasn't been opened yet
+    _database ??= sqlite3.open(dbPath);
+
+    // Execute a query to select all users from the 'User' table
+    final result = _database!.select(
+        '''SELECT * FROM User where username = '${authParameters.username}'
+    AND password = '${authParameters.password}' ''');
+
+    // Log the result of the query if in debug mode
+    if (kDebugMode) print(result.toList());
+
+    // If results are found, return the first user as a [MayaAuthUserDto]
+    if (result.isNotEmpty) {
+      for (final user in result) {
+        return Right(MayaAuthUserDto.fromJson(user));
+      }
+    }
+
+    // Return a failure if no user data is found
+    return Left(DatabaseFailure(
+        code: 404, message: 'No data found on given parameters'));
+  }
+
+  /// Placeholder method for populating the database with initial data.
+  ///
+  /// This method can be implemented to seed the database with required data during
+  /// the app's initialization. Currently, the method doesn't perform any operations.
+  @override
+  void populate() {}
 }

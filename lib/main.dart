@@ -5,29 +5,17 @@ import 'presentation/routes/router.dart';
 
 // Entry point of the application.
 // This calls `runApp` to start the Flutter application with MayaApp as the root widget.
-void main() => runApp(const MayaApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await injector.initializer();
 
-// MayaApp widget is a StatefulWidget, meaning it can hold mutable state
-// that can be updated over time.
-class MayaApp extends StatefulWidget {
-  const MayaApp(
-      {super.key}); // Constructor to initialize the widget with a key.
-
-  @override
-  State<MayaApp> createState() =>
-      _MayaAppState(); // Creates and returns the state object for MayaApp.
+  runApp(const MayaApp());
 }
 
 // _MayaAppState manages the state for MayaApp.
 // The state is mutable, which allows us to initialize services or dependencies when the app starts.
-class _MayaAppState extends State<MayaApp> {
-  @override
-  void initState() {
-    super.initState();
-    // Initializes the service locator (injector) when the app is first created.
-    // This might include setting up dependency injections or initializing services.
-    injector.initializer();
-  }
+class MayaApp extends StatelessWidget {
+  const MayaApp({super.key});
 
   // The build method is called when the widget needs to rebuild.
   // This widget represents the root of your application, and it configures

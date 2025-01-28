@@ -50,7 +50,7 @@ Future<Either<AppFailure, T>> tryAndCatchTheExpcetions<T>({
     ];
 
     // If there are no converters, add the default converter as a fallback
-    if (exceptionsList!.isNotEmpty) {
+    if (exceptionsList == null) {
       exceptionConvertersList.add(DefaultExceptionsConverter<T>());
     }
 

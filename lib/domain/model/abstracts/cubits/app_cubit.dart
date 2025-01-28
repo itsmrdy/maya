@@ -11,7 +11,7 @@ abstract class AppCubit<Params, ReturnValue> extends Cubit<AppState> {
 
   // Abstract method to be implemented by subclasses to handle specific business logic.
   // It performs the actual method call with the provided parameters and returns a result or failure.
-  Future<Either<AppFailure, ReturnValue>> onMethodCall({required Params param});
+  Future<Either<AppFailure, ReturnValue>> onMethodCall({Params? param});
 
   ReturnValue?
       _value; // Holds the value resulting from the method call (if available)
@@ -32,7 +32,7 @@ abstract class AppCubit<Params, ReturnValue> extends Cubit<AppState> {
   /// - Based on the result, it either emits a failure state (`AppReturnFailure`) or a success state (`AppReturnSuccess`).
   ///
   /// [param] is the parameter passed to the business logic.
-  Future<void> dispatch(Params param) async {
+  Future<void> dispatch({Params? param}) async {
     // Ensure the current task is asynchronous
     await ensureAsync();
 
@@ -62,7 +62,8 @@ abstract class AppCubit<Params, ReturnValue> extends Cubit<AppState> {
     result.fold(
       // If the result is a failure, emit the failure state
       (AppFailure failure) {
-        emit(AppReturnFailure<Params>(failure: failure, param: param));
+        _runIndicator = 0;
+        emit(AppReturnFailure<Params>(failure: failure, param: param as Params));
       },
       // If the result is successful, store the value and emit the success state
       (ReturnValue result) {
